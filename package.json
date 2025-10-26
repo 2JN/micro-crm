@@ -1,0 +1,22 @@
+{
+  "name": "micro-crm",
+  "version": "1.0.0",
+  "description": "",
+  "workspaces": [
+    "packages/backend",
+    "packages/frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm --workspace backend run dev",
+    "dev:frontend": "npm --workspace frontend run dev",
+    "test": "npm --workspace backend test",
+    "build": "npm --workspaces run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.10.0",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
