@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, requireRole } from "../middleware/auth";
 import {
   createUser,
   getUser,
@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
 });
 
 // Get all users
-router.get("/", async (req, res) => {
+router.get("/", requireRole("admin"), async (req, res) => {
   const allUsers = await getUsers().catch((err) => {
     console.error(err);
     res.status(500);

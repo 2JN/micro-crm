@@ -1,7 +1,6 @@
 import request from "supertest";
 
 import app from "../../src";
-import resetTestDB from "../../scripts/reset-test-db";
 
 describe("Auth API (E2E)", () => {
   let token: string;

@@ -1,6 +1,7 @@
 import request from "supertest";
 
 import app from "../../src";
+import { getAdminToken, getAuthToken } from "../helpers/auth";
 
 describe("User API (E2E)", () => {
   let userID: string;
@@ -46,13 +47,7 @@ describe("User API (E2E)", () => {
     let token: string;
 
     beforeAll(async () => {
-      const res = await request(app).post("/auth/register").send({
-        name: "John Doe",
-        email: "john2@mail.com",
-        password: "secret123",
-      });
-
-      token = res.body.token;
+      token = await getAuthToken();
     });
 
     it("should return the current logged in user", async () => {
@@ -62,6 +57,25 @@ describe("User API (E2E)", () => {
 
       expect(res.statusCode).toBe(200);
       expect(res.body.user.email).toBe("john2@mail.com");
+    });
+
+    it("should deny access to non-admin users", async () => {
+      const res = await request(app)
+        .get("/users")
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(403);
+    });
+
+    it("should allow admin to list all users", async () => {
+      const adminToken = await getAdminToken();
+
+      const res = await request(app)
+        .get("/users")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(Array.isArray(res.body)).toBe(true);
     });
   });
 });
