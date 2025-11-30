@@ -19,7 +19,7 @@ const loginSchema = z.object({
 router.post("/register", async (req, res) => {
   try {
     const data = registerSchema.parse(req.body);
-    const result = await registerUser(data.name, data.email, data.password);
+    const result = await registerUser(data);
     res.json(result);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -29,7 +29,7 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const data = loginSchema.parse(req.body);
-    const result = await loginUser(data.email, data.password);
+    const result = await loginUser(data);
     res.json(result);
   } catch (err: any) {
     res.status(400).json({ error: err.message });

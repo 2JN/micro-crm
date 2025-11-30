@@ -36,7 +36,7 @@ export async function getUser(id: string) {
   return user;
 }
 
-export async function updateUser({ password, ...data }: User) {
+export async function updateUser({ password, ...data }: Partial<User>) {
   let passwordHash;
   if (password) {
     const saltRounds = 10;

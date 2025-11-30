@@ -1,6 +1,11 @@
 import { Router } from "express";
+import z from "zod";
 
-import { requireAuth, requireRole } from "../middleware/auth";
+import {
+  requireAuth,
+  requireRole,
+  requireRoleOrSelf,
+} from "../middleware/auth";
 import {
   createUser,
   getUser,
@@ -10,15 +15,27 @@ import {
 
 const router = Router();
 
-// Create user
-router.post("/", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+const userSchema = z.object({
+  name: z.string(),
+  email: z.email(),
+  password: z.string().min(6),
+});
 
-    const user = await createUser({ name, email, password });
+const updateUserSchema = z.object({
+  name: z.string().optional(),
+  email: z.email().optional(),
+  password: z.string().min(6).optional(),
+});
+
+// Create user
+router.post("/", requireRole("admin"), async (req, res) => {
+  try {
+    const data = userSchema.parse(req.body);
+
+    const user = await createUser(data);
     res.json(user);
-  } catch (err) {
-    res.status(400).json({ error: "User creation failed" });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
 });
 
@@ -37,20 +54,26 @@ router.get("/me", requireAuth, async (req, res) => {
 });
 
 // Get user by ID
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireRole("admin"), async (req, res) => {
   const user = await getUser(req.params.id);
   if (!user) return res.status(404).json({ error: "User not found" });
   res.json(user);
 });
 
-router.put("/:id", async (req, res) => {
-  const user = await updateUser({
-    id: req.params.id,
-    ...req.body,
-  });
+router.put("/:id", requireRoleOrSelf("admin"), async (req, res) => {
+  try {
+    const data = updateUserSchema.parse(req.body);
 
-  if (!user) return res.status(404).json({ error: "User not found" });
-  res.json(user);
+    const user = await updateUser({
+      id: req.params.id,
+      ...data,
+    });
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 export default router;

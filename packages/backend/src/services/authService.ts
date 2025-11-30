@@ -8,11 +8,15 @@ import { TokenPayload } from "../types";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export async function registerUser(
-  name: string,
-  email: string,
-  password: string
-) {
+export async function registerUser({
+  name,
+  email,
+  password,
+}: {
+  name: string;
+  email: string;
+  password: string;
+}) {
   const newUser = await createUser({ name, email, password });
 
   const payload: TokenPayload = {
@@ -28,7 +32,13 @@ export async function registerUser(
   return { user: newUser, token };
 }
 
-export async function loginUser(email: string, password: string) {
+export async function loginUser({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}) {
   const [user] = await db.select().from(users).where(eq(users.email, email));
   if (!user) throw new Error("Invalid credentials");
 

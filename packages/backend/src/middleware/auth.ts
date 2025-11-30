@@ -42,3 +42,31 @@ export function requireRole(...allowedRoles: string[]) {
     }
   };
 }
+
+export function requireRoleOrSelf(...allowedRoles: string[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const header = req.headers.authorization;
+
+    if (!header)
+      return res.status(401).json({ error: "Missing authorization header" });
+
+    const token = header.split(" ")[1];
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
+      const selfAccount = req.params.id === decoded.id;
+
+      if (
+        !selfAccount &&
+        (!decoded.role || !allowedRoles.includes(decoded.role))
+      ) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
+      (req as any).user = decoded;
+      next();
+    } catch (err) {
+      res.status(401).json({ error: "Invalid or expired token" });
+    }
+  };
+}
